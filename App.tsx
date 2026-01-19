@@ -49,6 +49,8 @@ import {
 } from 'lucide-react';
 import { DayRecord, Workout, Nutrition, ClientProfile, ClientTargets, ChatMessage } from './types';
 import { getAICoachInsights, parseWorkoutPlan, getExerciseInstructions, getExerciseCorrection } from './services/geminiService';
+import { supabase } from "./services/supabaseClient";
+
 
 const PHOTO_LABELS = ["Linke Ansicht", "Rechte Ansicht", "Frontal", "Von hinten"];
 
@@ -71,7 +73,7 @@ const generateEmptyWorkouts = (date: string): Workout[] => {
 };
 
 const INITIAL_TARGETS: ClientTargets = { protein: 160, carbs: 250, fat: 70, steps: 10000, calories: 2270 };
-const COACH_PASSWORD = "123456";
+const COACH_PASSWORD = "161094";
 
 const App: React.FC = () => {
   const [activeClientId, setActiveClientId] = useState<string | null>(null);
@@ -89,6 +91,22 @@ const App: React.FC = () => {
   const [loginMode, setLoginMode] = useState<'client' | 'coach'>('client');
   const [clientNameInput, setClientNameInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
+  const handleCoachLogin = async () => {
+  setAuthError(false);
+
+  const { error } = await supabase.auth.signInWithPassword({
+    email: clientNameInput,   // hier kommt deine Admin-E-Mail rein
+    password: passwordInput,  // hier dein neues Admin-Passwort
+  });
+
+  if (error) {
+    setAuthError("Login fehlgeschlagen");
+    return;
+  }
+
+  setIsCoach(true);
+};
+
   const [authError, setAuthError] = useState<string | boolean>(false);
   const [searchTerm, setSearchTerm] = useState('');
 

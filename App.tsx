@@ -76,6 +76,8 @@ const INITIAL_TARGETS: ClientTargets = { protein: 160, carbs: 250, fat: 70, step
 const COACH_PASSWORD = "161094";
 
 const App: React.FC = () => {
+  const COACH_EMAIL = "andi_vuong@gmx.de";
+
   const [activeClientId, setActiveClientId] = useState<string | null>(null);
   const [isCoach, setIsCoach] = useState(false);
   const [clients, setClients] = useState<Record<string, ClientProfile>>({
@@ -104,7 +106,7 @@ const App: React.FC = () => {
     return;
   }
 
-  setIsCoach(true);
+  setIsCoach(clientNameInput === COACH_EMAIL);
 };
 
   const [authError, setAuthError] = useState<string | boolean>(false);

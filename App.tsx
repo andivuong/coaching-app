@@ -109,6 +109,23 @@ const App: React.FC = () => {
   setIsCoach(clientNameInput === COACH_EMAIL);
 };
 
+  const handleClientLogin = async () => {
+  setAuthError(false);
+
+  const { error } = await supabase.auth.signInWithPassword({
+    email: clientNameInput,      // Client E-Mail
+    password: passwordInput,     // Client Passwort
+  });
+
+  if (error) {
+    setAuthError("Login fehlgeschlagen");
+    return;
+  }
+
+  // Client ist eingeloggt, aber KEIN Coach
+  setIsCoach(false);
+};
+
   const [authError, setAuthError] = useState<string | boolean>(false);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -360,7 +377,11 @@ const App: React.FC = () => {
                     placeholder="Vor- und Nachname" 
                     value={clientNameInput} 
                     onChange={(e) => setClientNameInput(e.target.value)} 
-                    onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                    onKeyDown={(e) =>
+  e.key === "Enter" &&
+  (loginMode === "coach" ? handleCoachLogin() : handleClientLogin())
+}
+
                     className={`w-full bg-slate-50 border p-4 pr-12 rounded-2xl font-black text-slate-700 focus:outline-none transition-all ${authError ? 'border-rose-400' : 'border-slate-200 focus:border-blue-500'}`} 
                   />
                   <User className={`absolute right-4 top-4 w-5 h-5 ${authError ? 'text-rose-400' : 'text-slate-300'}`} />
@@ -370,7 +391,11 @@ const App: React.FC = () => {
             <div className="space-y-1.5">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Passwort</label>
               <div className="relative">
-                <input type="password" placeholder="••••••••" value={passwordInput} onChange={(e) => setPasswordInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleLogin()} className={`w-full bg-slate-50 border p-4 rounded-2xl font-black text-slate-700 focus:outline-none transition-all ${authError ? 'border-rose-400' : 'border-slate-200 focus:border-blue-500'}`} />
+                <input type="password" placeholder="••••••••" value={passwordInput} onChange={(e) => setPasswordInput(e.target.value)} onKeyDown={(e) =>
+  e.key === "Enter" &&
+  (loginMode === "coach" ? handleCoachLogin() : handleClientLogin())
+}
+ className={`w-full bg-slate-50 border p-4 rounded-2xl font-black text-slate-700 focus:outline-none transition-all ${authError ? 'border-rose-400' : 'border-slate-200 focus:border-blue-500'}`} />
                 <Lock className={`absolute right-4 top-4 w-5 h-5 ${authError ? 'text-rose-400' : 'text-slate-300'}`} />
               </div>
             </div>
@@ -379,7 +404,10 @@ const App: React.FC = () => {
                 {typeof authError === 'string' ? authError : 'Zugriff verweigert'}
               </p>
             )}
-            <button onClick={handleLogin} className="w-full bg-blue-600 text-white p-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-blue-100 hover:bg-blue-700 active:scale-95 transition-all mt-4 flex items-center justify-center gap-2">Login <UserCheck className="w-4 h-4" /></button>
+            <button onClick={() =>
+  loginMode === "coach" ? handleCoachLogin() : handleClientLogin()
+}
+ className="w-full bg-blue-600 text-white p-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-blue-100 hover:bg-blue-700 active:scale-95 transition-all mt-4 flex items-center justify-center gap-2">Login <UserCheck className="w-4 h-4" /></button>
           </div>
         </div>
       </div>

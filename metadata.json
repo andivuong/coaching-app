@@ -1,0 +1,7 @@
+{
+  "name": "FitSheet Pro - Fitness & Nutrition Tracker",
+  "description": "A mobile-optimized fitness and nutrition tracking application designed with a normalized data structure compatible with AppSheet and Google Sheets, featuring an integrated AI Coach powered by Gemini.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

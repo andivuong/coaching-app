@@ -49,7 +49,8 @@ import {
 } from 'lucide-react';
 import { DayRecord, Workout, Nutrition, ClientProfile, ClientTargets, ChatMessage } from './types';
 import { getAICoachInsights, parseWorkoutPlan, getExerciseInstructions, getExerciseCorrection } from './services/geminiService';
-import { supabase } from "./services/supabaseClient";
+import { supabase } from "./services/supabaseClient.ts";
+
 
 
 const PHOTO_LABELS = ["Linke Ansicht", "Rechte Ansicht", "Frontal", "Von hinten"];

@@ -2,7 +2,14 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { DayRecord } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+
+if (!apiKey) {
+  console.warn("Kein Gemini API Key gesetzt – AI deaktiviert.");
+}
+
+const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
+
 
 export const getAICoachInsights = async (dayRecord: DayRecord): Promise<string> => {
   const workoutSummary = dayRecord.workouts.map(w => 

@@ -189,6 +189,36 @@ const loadClientFromDb = async (clientId: string) => {
     },
   }));
 };
+ const loadClientsFromDb = async () => {
+  const { data, error } = await supabase
+    .from("clients")
+    .select("*")
+    .eq("role", "client");
+
+  if (error) {
+    console.error("clients load error", error);
+    return;
+  }
+
+  setClients(prev => {
+    const next = { ...prev };
+    (data || []).forEach((c: any) => {
+      next[c.user_id] = {
+        ...(next[c.user_id] || {}),
+        id: c.user_id,
+        name: c.email || "Klient",
+        isActive: true,
+        targets: next[c.user_id]?.targets || INITIAL_TARGETS,
+        records: next[c.user_id]?.records || {},
+        messages: next[c.user_id]?.messages || [],
+        hasUnreadClientMsg: next[c.user_id]?.hasUnreadClientMsg || false,
+        hasUnreadCoachMsg: next[c.user_id]?.hasUnreadCoachMsg || false,
+      };
+    });
+    return next;
+  });
+};
+ 
 const saveDayToDb = async (clientId: string, date: string, record: any) => {
   const { error } = await supabase
     .from("daily_logs")

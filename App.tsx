@@ -138,6 +138,7 @@ await supabase.from("clients").upsert({
 });
 setActiveClientId(user.id);
 setActiveTab("calendar"); 
+await loadClientFromDb(user.id);    
 };
 const loadClientFromDb = async (clientId: string) => {
   // daily_logs laden

@@ -125,6 +125,19 @@ const App: React.FC = () => {
 
   // Client ist eingeloggt, aber KEIN Coach
   setIsCoach(false);
+   const { data: userRes } = await supabase.auth.getUser();
+const user = userRes.user;
+
+if (!user) return;
+
+// Client in DB anlegen (falls noch nicht vorhanden)
+await supabase.from("clients").upsert({
+  user_id: user.id,
+  email: user.email,
+  role: "client",
+});
+setActiveClientId(user.id);
+setActiveTab("calendar"); 
 };
 
   const [authError, setAuthError] = useState<string | boolean>(false);
@@ -135,21 +148,6 @@ const App: React.FC = () => {
   const [loadingInstruction, setLoadingInstruction] = useState(false);
 
   // Persistenz
-  useEffect(() => {
-    const saved = localStorage.getItem('fitsheet_v21_storage');
-    if (saved) {
-      try { 
-        const parsed = JSON.parse(saved);
-        if (parsed && Object.keys(parsed).length > 0) {
-          setClients(parsed); 
-        }
-      } catch (e) { console.error("Restore Error:", e); }
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('fitsheet_v21_storage', JSON.stringify(clients));
-  }, [clients]);
 
   // Nachricht gelesen Logik
   useEffect(() => {
@@ -378,7 +376,11 @@ const App: React.FC = () => {
                     placeholder="Vor- und Nachname" 
                     value={clientNameInput} 
                     onChange={(e) => setClientNameInput(e.target.value)} 
-                   onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                   onKeyDown={(e) =>
+  e.key === "Enter" &&
+  (loginMode === "coach" ? handleCoachLogin() : handleClientLogin())
+}
+
 
                     className={`w-full bg-slate-50 border p-4 pr-12 rounded-2xl font-black text-slate-700 focus:outline-none transition-all ${authError ? 'border-rose-400' : 'border-slate-200 focus:border-blue-500'}`} 
                   />
@@ -389,7 +391,10 @@ const App: React.FC = () => {
             <div className="space-y-1.5">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Passwort</label>
               <div className="relative">
-                <input type="password" placeholder="••••••••" value={passwordInput} onChange={(e) => setPasswordInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                <input type="password" placeholder="••••••••" value={passwordInput} onChange={(e) => setPasswordInput(e.target.value)} onKeyDown={(e) =>
+  e.key === "Enter" &&
+  (loginMode === "coach" ? handleCoachLogin() : handleClientLogin())
+}
 
  className={`w-full bg-slate-50 border p-4 rounded-2xl font-black text-slate-700 focus:outline-none transition-all ${authError ? 'border-rose-400' : 'border-slate-200 focus:border-blue-500'}`} />
                 <Lock className={`absolute right-4 top-4 w-5 h-5 ${authError ? 'text-rose-400' : 'text-slate-300'}`} />
@@ -400,7 +405,9 @@ const App: React.FC = () => {
                 {typeof authError === 'string' ? authError : 'Zugriff verweigert'}
               </p>
             )}
-            <button onClick={handleLogin}
+            <button
+ onClick={() => (loginMode === "coach" ? handleCoachLogin() : handleClientLogin())}
+
 
  className="w-full bg-blue-600 text-white p-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-blue-100 hover:bg-blue-700 active:scale-95 transition-all mt-4 flex items-center justify-center gap-2">Login <UserCheck className="w-4 h-4" /></button>
           </div>

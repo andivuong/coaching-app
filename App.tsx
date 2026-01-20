@@ -139,7 +139,33 @@ await supabase.from("clients").upsert({
 setActiveClientId(user.id);
 setActiveTab("calendar"); 
 };
+const loadClientFromDb = async (clientId: string) => {
+  // daily_logs laden
+  const { data: logs, error: logsError } = await supabase
+    .from("daily_logs")
+    .select("*")
+    .eq("client_id", clientId);
 
+  if (logsError) {
+    console.error("daily_logs error", logsError);
+    return;
+  }
+
+  const records: Record<string, any> = {};
+  (logs || []).forEach((row: any) => {
+    records[row.date] = row;
+  });
+
+  setClients((prev) => ({
+    ...prev,
+    [clientId]: {
+      ...(prev[clientId] || {}),
+      id: clientId,
+      records,
+    },
+  }));
+};
+  
   const [authError, setAuthError] = useState<string | boolean>(false);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -369,11 +395,11 @@ setActiveTab("calendar");
           <div className="space-y-4">
             {loginMode === 'client' && (
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Dein Name (Check-in)</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Deine E-Mail</label>
                 <div className="relative">
                   <input 
-                    type="text" 
-                    placeholder="Vor- und Nachname" 
+                    type="email"
+                    placeholder="name@domain.de" 
                     value={clientNameInput} 
                     onChange={(e) => setClientNameInput(e.target.value)} 
                    onKeyDown={(e) =>

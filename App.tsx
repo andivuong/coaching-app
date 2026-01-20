@@ -115,6 +115,8 @@ const App: React.FC = () => {
 setIsCoach(clientNameInput.trim().toLowerCase() === COACH_EMAIL.toLowerCase());
 setActiveTab("admin");
 setActiveClientId(null);
+    await loadClientsFromDb();
+
 
 };
 

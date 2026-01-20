@@ -166,6 +166,20 @@ const loadClientFromDb = async (clientId: string) => {
     },
   }));
 };
+const saveDayToDb = async (clientId: string, date: string, record: any) => {
+  const { error } = await supabase
+    .from("daily_logs")
+    .upsert(
+      {
+        client_id: clientId,
+        date,
+        ...record,
+      },
+      { onConflict: "client_id,date" }
+    );
+
+  if (error) throw error;
+};
   
   const [authError, setAuthError] = useState<string | boolean>(false);
   const [searchTerm, setSearchTerm] = useState('');

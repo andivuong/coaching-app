@@ -143,6 +143,20 @@ const handleClientLogin = async () => {
     email: user.email,
     role: "client",
   });
+setClients(prev => ({
+  ...prev,
+  [user.id]: {
+    ...(prev[user.id] || {}),
+    id: user.id,
+    name: user.email || "Klient",
+    isActive: true,
+    targets: prev[user.id]?.targets || INITIAL_TARGETS,
+    records: prev[user.id]?.records || {},
+    messages: prev[user.id]?.messages || [],
+    hasUnreadClientMsg: prev[user.id]?.hasUnreadClientMsg || false,
+    hasUnreadCoachMsg: prev[user.id]?.hasUnreadCoachMsg || false,
+  }
+}));
 
   setActiveClientId(user.id);
   setActiveTab("calendar");

@@ -112,18 +112,18 @@ const App: React.FC = () => {
   return;
 }
 
-setIsCoach(true);
+setIsCoach(clientNameInput.trim().toLowerCase() === COACH_EMAIL.toLowerCase());
 setActiveTab("admin");
 setActiveClientId(null);
 
 };
 
-  const handleClientLogin = async () => {
+const handleClientLogin = async () => {
   setAuthError(false);
 
   const { error } = await supabase.auth.signInWithPassword({
-    email: clientNameInput,      // Client E-Mail
-    password: passwordInput,     // Client Passwort
+    email: clientNameInput,
+    password: passwordInput,
   });
 
   if (error) {
@@ -131,23 +131,24 @@ setActiveClientId(null);
     return;
   }
 
-  // Client ist eingeloggt, aber KEIN Coach
   setIsCoach(false);
-   const { data: userRes } = await supabase.auth.getUser();
-const user = userRes.user;
 
-if (!user) return;
+  const { data: userRes } = await supabase.auth.getUser();
+  const user = userRes.user;
+  if (!user) return;
 
-// Client in DB anlegen (falls noch nicht vorhanden)
-await supabase.from("clients").upsert({
-  user_id: user.id,
-  email: user.email,
-  role: "client",
-});
-setActiveClientId(user.id);
-setActiveTab("calendar"); 
-await loadClientFromDb(user.id);    
+  // 🔹 Client in DB anlegen / aktualisieren
+  await supabase.from("clients").upsert({
+    user_id: user.id,
+    email: user.email,
+    role: "client",
+  });
+
+  setActiveClientId(user.id);
+  setActiveTab("calendar");
+  await loadClientFromDb(user.id);
 };
+    
 const loadClientFromDb = async (clientId: string) => {
   // daily_logs laden
   const { data: logs, error: logsError } = await supabase

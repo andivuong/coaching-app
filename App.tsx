@@ -107,7 +107,15 @@ const App: React.FC = () => {
     return;
   }
 
-  setIsCoach(clientNameInput === COACH_EMAIL);
+  if (error) {
+  setAuthError("Login fehlgeschlagen");
+  return;
+}
+
+setIsCoach(true);
+setActiveTab("admin");
+setActiveClientId(null);
+
 };
 
   const handleClientLogin = async () => {
@@ -414,7 +422,7 @@ try {
             <button onClick={() => setLoginMode('coach')} className={`flex-1 py-3 rounded-xl text-xs font-black uppercase transition-all ${loginMode === 'coach' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}>Coach</button>
           </div>
           <div className="space-y-4">
-            {loginMode === 'client' && (
+            {(loginMode === 'client' || loginMode === 'coach') && (
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Deine E-Mail</label>
                 <div className="relative">

@@ -328,9 +328,15 @@ const loadClientFromDb = async (clientId: string) => {
   const currentSelection = useMemo(() => getEffectiveData(selectedDate), [activeClient, selectedDate]);
   const previewSelection = useMemo(() => getEffectiveData(previewDate), [activeClient, previewDate]);
 
-  const handleUpdateRecord = (updated: DayRecord) => {
+  const handleUpdateRecord = async (updated: DayRecord) => {
     if (!activeClientId) return;
     setClients(prev => ({ ...prev, [activeClientId]: { ...prev[activeClientId], records: { ...prev[activeClientId].records, [updated.date]: updated } } }));
+try {
+  await saveDayToDb(activeClientId, updated.date, updated);
+} catch (e) {
+  console.error("saveDayToDb failed", e);
+}
+
   };
 
   const updateClientProfile = (id: string, updates: Partial<ClientProfile>) => {

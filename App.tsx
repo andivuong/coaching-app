@@ -503,7 +503,7 @@ try {
         </header>
 
         <main className="flex-1 overflow-y-auto p-3 md:p-8 custom-scrollbar">
-          {activeTab === 'calendar' && activeClientId && (
+          {activeTab === 'calendar' && activeClientId && activeClient && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
               <div className="lg:col-span-7 space-y-6">
                 <CalendarView 
@@ -513,6 +513,7 @@ try {
                   records={activeClient.records || {}} 
                 />
               </div>
+             
               <div className="lg:col-span-5">
                 {previewSelection && (
                   <ClientTargetsCard 
@@ -535,6 +536,11 @@ try {
               </div>
             </div>
           )}
+           {activeTab === 'calendar' && activeClientId && !activeClient && (
+  <div className="p-8 text-center text-slate-400 font-black uppercase text-xs">
+    Lade Klient...
+  </div>
+)}
           {activeTab === 'details' && currentSelection && (
             <div className="space-y-4 md:space-y-10 animate-in slide-in-from-right duration-300 max-w-5xl mx-auto">
               <div className="bg-slate-50 p-3 md:p-4 rounded-[1.5rem] md:rounded-[2.5rem] border border-slate-100 flex items-center justify-between shadow-sm">

@@ -181,9 +181,47 @@ console.log("daily_logs loaded count:", (logs || []).length);
 console.log("daily_logs first row:", (logs || [])[0]);
 
   const records: Record<string, any> = {};
-  (logs || []).forEach((row: any) => {
-    records[row.date] = row;
-  });
+(logs || []).forEach((row: any) => {
+  // ✅ Primär: neues JSONB-Format
+  const rec = row.record || null;
+
+  if (rec) {
+    // Stelle sicher, dass date/id gesetzt sind
+    const merged: any = { ...rec, date: row.date, id: row.date };
+
+    // planned aus separater Spalte ergänzen (falls im record nicht drin)
+    if (row.planned) {
+      if (merged.plannedNutrition == null && row.planned.plannedNutrition != null) {
+        merged.plannedNutrition = row.planned.plannedNutrition;
+      }
+      if (merged.plannedSteps == null && row.planned.plannedSteps != null) {
+        merged.plannedSteps = row.planned.plannedSteps;
+      }
+    }
+
+    records[row.date] = merged;
+    return;
+  }
+
+  // 🔁 Fallback (alt): falls row.record leer ist, damit nichts crasht
+  records[row.date] = {
+    id: row.date,
+    date: row.date,
+    bodyWeight: row.body_weight_kg || 0,
+    steps: row.steps || 0,
+    nutrition: {
+      id: `nut-${row.date}`,
+      dayId: row.date,
+      protein: row.protein_g || 0,
+      carbs: row.carbs_g || 0,
+      fat: row.fat_g || 0,
+      calories: row.calories_kcal || 0,
+    },
+    workouts: row.training || [],
+    photos: [],
+  };
+});
+
 
   setClients((prev) => ({
     ...prev,

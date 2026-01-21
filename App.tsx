@@ -176,6 +176,9 @@ const loadClientFromDb = async (clientId: string) => {
     console.error("daily_logs error", logsError);
     return;
   }
+  
+console.log("daily_logs loaded count:", (logs || []).length);
+console.log("daily_logs first row:", (logs || [])[0]);
 
   const records: Record<string, any> = {};
   (logs || []).forEach((row: any) => {
@@ -402,6 +405,7 @@ const saveDayToDb = async (clientId: string, date: string, record: any) => {
     setClients(prev => ({ ...prev, [activeClientId]: { ...prev[activeClientId], records: { ...prev[activeClientId].records, [updated.date]: updated } } }));
 try {
   await saveDayToDb(activeClientId, updated.date, updated);
+  await loadClientFromDb(activeClientId);
 } catch (e) {
   console.error("saveDayToDb failed", e);
 }

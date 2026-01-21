@@ -180,7 +180,7 @@ const loadClientFromDb = async (clientId: string) => {
   // daily_logs laden
   const { data: logs, error: logsError } = await supabase
     .from("daily_logs")
-    .select("*")
+    .select("date, record, planned, protein_g, fat_g, carbs_g, calories_kcal, body_weight_kg, steps, training")
     .eq("client_id", clientId);
 
   if (logsError) {
@@ -191,16 +191,19 @@ const loadClientFromDb = async (clientId: string) => {
 console.log("daily_logs loaded count:", (logs || []).length);
 console.log("daily_logs first row:", (logs || [])[0]);
 
-  const records: Record<string, any> = {};
-(logs || []).forEach((row: any) => {
-  // ✅ Primär: neues JSONB-Format
-  const rec = row.record || null;
+ (logs || []).forEach((row: any) => {
+  // 1) Basis: record aus DB (Source of truth)
+  const base = row.record ?? null;
 
-  if (rec) {
-    // Stelle sicher, dass date/id gesetzt sind
-    const merged: any = { ...rec, date: row.date, id: row.date };
+  // 2) Wenn record existiert: merge + planned ergänzen
+  if (base) {
+    const merged: any = {
+      ...base,
+      id: base.id ?? row.date,
+      date: base.date ?? row.date,
+    };
 
-    // planned aus separater Spalte ergänzen (falls im record nicht drin)
+    // planned aus eigener Spalte ergänzen (falls im record nicht drin oder leer)
     if (row.planned) {
       if (merged.plannedNutrition == null && row.planned.plannedNutrition != null) {
         merged.plannedNutrition = row.planned.plannedNutrition;
@@ -210,29 +213,45 @@ console.log("daily_logs first row:", (logs || [])[0]);
       }
     }
 
+    // optional: fallback aus flachen Spalten, falls record alt/leer ist
+    if (merged.steps == null && row.steps != null) merged.steps = row.steps;
+    if (!merged.nutrition) {
+      merged.nutrition = {
+        id: `nut-${row.date}`,
+        dayId: row.date,
+        protein: row.protein_g ?? 0,
+        carbs: row.carbs_g ?? 0,
+        fat: row.fat_g ?? 0,
+        calories: row.calories_kcal ?? 0,
+      };
+    }
+    if (merged.bodyWeight == null && row.body_weight_kg != null) merged.bodyWeight = row.body_weight_kg;
+    if (!merged.workouts) merged.workouts = row.training ?? [];
+
     records[row.date] = merged;
     return;
   }
 
-  // 🔁 Fallback (alt): falls row.record leer ist, damit nichts crasht
+  // 3) Fallback (wenn row.record leer ist): baue ein minimales DayRecord aus flachen Spalten
   records[row.date] = {
     id: row.date,
     date: row.date,
-    bodyWeight: row.body_weight_kg || 0,
-    steps: row.steps || 0,
+    bodyWeight: row.body_weight_kg ?? 0,
+    steps: row.steps ?? 0,
     nutrition: {
       id: `nut-${row.date}`,
       dayId: row.date,
-      protein: row.protein_g || 0,
-      carbs: row.carbs_g || 0,
-      fat: row.fat_g || 0,
-      calories: row.calories_kcal || 0,
+      protein: row.protein_g ?? 0,
+      carbs: row.carbs_g ?? 0,
+      fat: row.fat_g ?? 0,
+      calories: row.calories_kcal ?? 0,
     },
-    workouts: row.training || [],
+    workouts: row.training ?? [],
     photos: [],
+    plannedSteps: row.planned?.plannedSteps ?? null,
+    plannedNutrition: row.planned?.plannedNutrition ?? null,
   };
 });
-
 
   setClients((prev) => ({
     ...prev,

@@ -196,7 +196,7 @@ console.log("daily_logs first row:", (logs || [])[0]);
 };
  const loadClientsFromDb = async () => {
   const { data, error } = await supabase
-    .from("clients")
+    .from("app_clients")
     .select("*")
     .eq("role", "client");
 

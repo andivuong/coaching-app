@@ -273,23 +273,29 @@ console.log("daily_logs first row:", (logs || [])[0]);
     return;
   }
 
-  setClients(prev => {
-    const next = { ...prev };
-    (data || []).forEach((c: any) => {
-      next[c.user_id] = {
-        ...(next[c.user_id] || {}),
-        id: c.user_id,
-        name: c.email || "Klient",
-        isActive: true,
-        targets: next[c.user_id]?.targets || INITIAL_TARGETS,
-        records: next[c.user_id]?.records || {},
-        messages: next[c.user_id]?.messages || [],
-        hasUnreadClientMsg: next[c.user_id]?.hasUnreadClientMsg || false,
-        hasUnreadCoachMsg: next[c.user_id]?.hasUnreadCoachMsg || false,
-      };
-    });
-    return next;
+setClients((prev) => {
+  const next: any = { ...prev };
+
+  (data || []).forEach((c: any) => {
+    const existing = next[c.user_id] || {};
+
+    next[c.user_id] = {
+      ...existing,
+      id: c.user_id,
+      name: c.email || "Klient",
+      isActive: true,
+
+      // NICHT überschreiben, wenn schon vorhanden
+      targets: existing.targets ?? INITIAL_TARGETS,
+      records: existing.records ?? {},
+      messages: existing.messages ?? [],
+      hasUnreadClientMsg: existing.hasUnreadClientMsg ?? false,
+      hasUnreadCoachMsg: existing.hasUnreadCoachMsg ?? false,
+    };
   });
+
+  return next;
+});
 };
  
 const saveDayToDb = async (clientId: string, date: string, record: any) => {

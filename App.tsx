@@ -228,13 +228,18 @@ const saveDayToDb = async (clientId: string, date: string, record: any) => {
   const { error } = await supabase
     .from("daily_logs")
     .upsert(
-      {
-        client_id: clientId,
-        date,
-        ...record,
-      },
-      { onConflict: "client_id,date" }
-    );
+  {
+    client_id: clientId,
+    date,
+    record, // kompletter DayRecord
+    planned: {
+      plannedNutrition: record.plannedNutrition ?? null,
+      plannedSteps: record.plannedSteps ?? null,
+    },
+  },
+  { onConflict: "client_id,date" }
+);
+
 
   if (error) throw error;
 };

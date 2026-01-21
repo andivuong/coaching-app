@@ -278,12 +278,30 @@ const saveDayToDb = async (clientId: string, date: string, record: any) => {
     .from("daily_logs")
     .upsert(
   {
-    client_id: clientId,
-    date,
-    record, // kompletter DayRecord
-    planned: {
-      plannedNutrition: record.plannedNutrition ?? null,
-      plannedSteps: record.plannedSteps ?? null,
+  client_id: clientId,
+  date,
+
+  // flache Spalten (für Fallback & einfache Queries)
+  protein_g: record?.nutrition?.protein ?? null,
+  fat_g: record?.nutrition?.fat ?? null,
+  carbs_g: record?.nutrition?.carbs ?? null,
+  calories_kcal: record?.nutrition?.calories ?? null,
+  body_weight_kg: record?.bodyWeight ?? null,
+  steps: record?.steps ?? null,
+  training: record?.workouts ?? [],
+
+  // komplettes DayRecord (Source of Truth)
+  record,
+
+  // geplante Werte getrennt
+  planned: {
+    plannedSteps: record?.plannedSteps ?? null,
+    plannedNutrition: record?.plannedNutrition ?? null,
+  },
+
+  updated_at: new Date().toISOString(),
+
+
     },
   },
   { onConflict: "client_id,date" }

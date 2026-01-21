@@ -140,11 +140,22 @@ const handleClientLogin = async () => {
   if (!user) return;
 
   // 🔹 Client in DB anlegen / aktualisieren
-  await supabase.from("app_clients").upsert({
+  const up = await supabase.from("app_clients").upsert(
+  {
     user_id: user.id,
     email: user.email,
     role: "client",
-  });
+  },
+  { onConflict: "user_id" }
+);
+
+console.log("app_clients upsert result:", up);
+
+if (up.error) {
+  console.error("app_clients upsert error:", up.error);
+}
+
+  
 setClients(prev => ({
   ...prev,
   [user.id]: {

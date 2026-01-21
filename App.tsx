@@ -140,7 +140,7 @@ const handleClientLogin = async () => {
   if (!user) return;
 
   // 🔹 Client in DB anlegen / aktualisieren
-  await supabase.from("clients").upsert({
+  await supabase.from("app_clients").upsert({
     user_id: user.id,
     email: user.email,
     role: "client",

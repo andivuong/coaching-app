@@ -71,6 +71,8 @@ const generateEmptyWorkouts = (date: string): Workout[] => {
 
 const INITIAL_TARGETS: ClientTargets = { protein: 160, carbs: 250, fat: 70, steps: 10000, calories: 2270 };
 const COACH_PASSWORD = "161094";
+const COACH_EMAIL = "andi_vuong@gmx.de";
+
 const App: React.FC = () => {
   useEffect(() => {
   const start = async () => {
@@ -113,7 +115,6 @@ const App: React.FC = () => {
   start();
 }, []);
 
-const COACH_EMAIL = "andi_vuong@gmx.de";
 const [activeClientId, setActiveClientId] = useState<string | null>(null);
 const [isCoach, setIsCoach] = useState(false);
 const [clients, setClients] = useState<Record<string, ClientProfile>>({});

@@ -51,12 +51,8 @@ import { DayRecord, Workout, Nutrition, ClientProfile, ClientTargets, ChatMessag
 import { getAICoachInsights, parseWorkoutPlan, getExerciseInstructions, getExerciseCorrection } from './services/geminiService';
 import { supabase } from "./services/supabaseClient.ts";
 
-
-
 const PHOTO_LABELS = ["Linke Ansicht", "Rechte Ansicht", "Frontal", "Von hinten"];
-
 const formatDate = (date: Date): string => date.toISOString().split('T')[0];
-
 const generateEmptyWorkouts = (date: string): Workout[] => {
   return Array.from({ length: 8 }).map((_, idx) => ({
     id: `w-${date}-${idx}`,
@@ -75,73 +71,48 @@ const generateEmptyWorkouts = (date: string): Workout[] => {
 
 const INITIAL_TARGETS: ClientTargets = { protein: 160, carbs: 250, fat: 70, steps: 10000, calories: 2270 };
 const COACH_PASSWORD = "161094";
-
 const App: React.FC = () => {
-  const COACH_EMAIL = "andi_vuong@gmx.de";
-
-  const [activeClientId, setActiveClientId] = useState<string | null>(null);
-  const [isCoach, setIsCoach] = useState(false);
-  const [clients, setClients] = useState<Record<string, ClientProfile>>({
-    'c1': { id: 'c1', name: 'Max Mustermann', password: '123', isActive: true, targets: INITIAL_TARGETS, records: {}, messages: [] },
-  });
-
-  const [selectedDate, setSelectedDate] = useState<string>(formatDate(new Date()));
-  const [previewDate, setPreviewDate] = useState<string>(formatDate(new Date()));
-  const [activeTab, setActiveTab] = useState<'calendar' | 'details' | 'progression' | 'admin' | 'chat'>('calendar');
-  const [isAiLoading, setIsAiLoading] = useState(false);
-  const [aiInsight, setAiInsight] = useState<string | null>(null);
-
-  const [loginMode, setLoginMode] = useState<'client' | 'coach'>('client');
-  const [clientNameInput, setClientNameInput] = useState('');
-  const [passwordInput, setPasswordInput] = useState('');
-  const handleCoachLogin = async () => {
-  setAuthError(false);
-
-  const { error } = await supabase.auth.signInWithPassword({
+const COACH_EMAIL = "andi_vuong@gmx.de";
+const [activeClientId, setActiveClientId] = useState<string | null>(null);
+const [isCoach, setIsCoach] = useState(false);
+const [clients, setClients] = useState<Record<string, ClientProfile>>({'c1': { id: 'c1', name: 'Max Mustermann', password: '123', isActive: true, targets: INITIAL_TARGETS, records: {}, messages: [] },});
+const [selectedDate, setSelectedDate] = useState<string>(formatDate(new Date()));
+const [previewDate, setPreviewDate] = useState<string>(formatDate(new Date()));
+const [activeTab, setActiveTab] = useState<'calendar' | 'details' | 'progression' | 'admin' | 'chat'>('calendar');
+const [isAiLoading, setIsAiLoading] = useState(false);
+const [aiInsight, setAiInsight] = useState<string | null>(null);
+const [loginMode, setLoginMode] = useState<'client' | 'coach'>('client');
+const [clientNameInput, setClientNameInput] = useState('');
+const [passwordInput, setPasswordInput] = useState('');
+const handleCoachLogin = async () => {setAuthError(false);
+const { error } = await supabase.auth.signInWithPassword({
     email: clientNameInput,   // hier kommt deine Admin-E-Mail rein
     password: passwordInput,  // hier dein neues Admin-Passwort
   });
 
-  if (error) {
-    setAuthError("Login fehlgeschlagen");
-    return;
-  }
-
-  if (error) {
-  setAuthError("Login fehlgeschlagen");
-  return;
-}
+if (error) {setAuthError("Login fehlgeschlagen");return;}
+if (error) {setAuthError("Login fehlgeschlagen");return;}
 
 setIsCoach(clientNameInput.trim().toLowerCase() === COACH_EMAIL.toLowerCase());
 setActiveTab("admin");
 setActiveClientId(null);
     await loadClientsFromDb();
 
-
 };
 
 const handleClientLogin = async () => {
   setAuthError(false);
+const { error } = await supabase.auth.signInWithPassword({email: clientNameInput,password: passwordInput,});
 
-  const { error } = await supabase.auth.signInWithPassword({
-    email: clientNameInput,
-    password: passwordInput,
-  });
-
-  if (error) {
-    setAuthError("Login fehlgeschlagen");
-    return;
-  }
-
+if (error) {setAuthError("Login fehlgeschlagen");return;}
   setIsCoach(false);
 
-  const { data: userRes } = await supabase.auth.getUser();
-  const user = userRes.user;
-  if (!user) return;
+const { data: userRes } = await supabase.auth.getUser();
+const user = userRes.user;
+if (!user) return;
 
   // 🔹 Client in DB anlegen / aktualisieren
-  const up = await supabase.from("app_clients").upsert(
-  {
+const up = await supabase.from("app_clients").upsert({
     user_id: user.id,
     email: user.email,
     role: "client",
@@ -151,11 +122,7 @@ const handleClientLogin = async () => {
 
 console.log("app_clients upsert result:", up);
 
-if (up.error) {
-  console.error("app_clients upsert error:", up.error);
-}
-
-  
+if (up.error) {console.error("app_clients upsert error:", up.error);} 
 setClients(prev => ({
   ...prev,
   [user.id]: {
@@ -191,19 +158,21 @@ const loadClientFromDb = async (clientId: string) => {
 console.log("daily_logs loaded count:", (logs || []).length);
 console.log("daily_logs first row:", (logs || [])[0]);
 
- (logs || []).forEach((row: any) => {
-  // 1) Basis: record aus DB (Source of truth)
+const records: Record<string, any> = {};
+
+(logs || []).forEach((row: any) => {
+  // 1) record aus DB (Source of truth)
   const base = row.record ?? null;
 
-  // 2) Wenn record existiert: merge + planned ergänzen
   if (base) {
+    // merge: record + date/id absichern
     const merged: any = {
       ...base,
       id: base.id ?? row.date,
       date: base.date ?? row.date,
     };
 
-    // planned aus eigener Spalte ergänzen (falls im record nicht drin oder leer)
+    // planned aus separater Spalte ergänzen (falls nicht im record drin)
     if (row.planned) {
       if (merged.plannedNutrition == null && row.planned.plannedNutrition != null) {
         merged.plannedNutrition = row.planned.plannedNutrition;
@@ -213,26 +182,11 @@ console.log("daily_logs first row:", (logs || [])[0]);
       }
     }
 
-    // optional: fallback aus flachen Spalten, falls record alt/leer ist
-    if (merged.steps == null && row.steps != null) merged.steps = row.steps;
-    if (!merged.nutrition) {
-      merged.nutrition = {
-        id: `nut-${row.date}`,
-        dayId: row.date,
-        protein: row.protein_g ?? 0,
-        carbs: row.carbs_g ?? 0,
-        fat: row.fat_g ?? 0,
-        calories: row.calories_kcal ?? 0,
-      };
-    }
-    if (merged.bodyWeight == null && row.body_weight_kg != null) merged.bodyWeight = row.body_weight_kg;
-    if (!merged.workouts) merged.workouts = row.training ?? [];
-
     records[row.date] = merged;
     return;
   }
 
-  // 3) Fallback (wenn row.record leer ist): baue ein minimales DayRecord aus flachen Spalten
+  // Fallback: falls record leer ist (damit UI nicht crasht)
   records[row.date] = {
     id: row.date,
     date: row.date,
@@ -247,21 +201,21 @@ console.log("daily_logs first row:", (logs || [])[0]);
       calories: row.calories_kcal ?? 0,
     },
     workouts: row.training ?? [],
-    photos: [],
-    plannedSteps: row.planned?.plannedSteps ?? null,
     plannedNutrition: row.planned?.plannedNutrition ?? null,
+    plannedSteps: row.planned?.plannedSteps ?? null,
+    photos: [],
   };
 });
 
-  setClients((prev) => ({
-    ...prev,
-    [clientId]: {
-      ...(prev[clientId] || {}),
-      id: clientId,
-      records,
-    },
-  }));
-};
+setClients((prev) => ({
+  ...prev,
+  [clientId]: {
+    ...(prev[clientId] || {}),
+    id: clientId,
+    records,
+  },
+}));
+
  const loadClientsFromDb = async () => {
   const { data, error } = await supabase
     .from("app_clients")

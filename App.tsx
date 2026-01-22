@@ -76,39 +76,48 @@ const COACH_EMAIL = "andi_vuong@gmx.de";
 const App: React.FC = () => {
   useEffect(() => {
   const start = async () => {
-    const { data } = await supabase.auth.getSession();
-    const user = data.session?.user;
-    if (!user) return;
+    const { data, error } = await supabase.auth.getSession();
+    console.log("[boot] getSession error:", error);
+    console.log("[boot] session user:", data?.session?.user?.email, data?.session?.user?.id);
 
-    const coach =
-      (user.email || "").toLowerCase() === COACH_EMAIL.toLowerCase();
+    const user = data.session?.user;
+    if (!user) {
+      console.log("[boot] no user -> return");
+      return;
+    }
+
+    const coach = (user.email || "").toLowerCase() === COACH_EMAIL.toLowerCase();
+    console.log("[boot] coach? ->", coach, "COACH_EMAIL:", COACH_EMAIL, "user.email:", user.email);
 
     setIsCoach(coach);
 
     if (coach) {
+      setActiveClientId(null);
       setActiveTab("admin");
+      console.log("[boot] loading clients for coach...");
       await loadClientsFromDb();
+      console.log("[boot] loadClientsFromDb done");
       return;
     }
 
+    console.log("[boot] client path -> upsert app_clients + load logs");
     await supabase.from("app_clients").upsert(
       { user_id: user.id, email: user.email, role: "client" },
       { onConflict: "user_id" }
     );
 
-   setClients(prev => ({
-  ...prev,
-  [user.id]: {
-    ...(prev[user.id] || {}),
-    id: user.id,
-    name: user.email || "Klient",
-    isActive: true,
-    targets: prev[user.id]?.targets || INITIAL_TARGETS,
-    records: prev[user.id]?.records || {},
-    messages: prev[user.id]?.messages || [],
-  },
-}));
-
+    setClients(prev => ({
+      ...prev,
+      [user.id]: {
+        ...(prev[user.id] || {}),
+        id: user.id,
+        name: user.email || "Klient",
+        isActive: true,
+        targets: prev[user.id]?.targets || INITIAL_TARGETS,
+        records: prev[user.id]?.records || {},
+        messages: prev[user.id]?.messages || [],
+      },
+    }));
 
     setActiveClientId(user.id);
     setActiveTab("calendar");
@@ -117,6 +126,7 @@ const App: React.FC = () => {
 
   start();
 }, []);
+
 
 const [activeClientId, setActiveClientId] = useState<string | null>(null);
 const [isCoach, setIsCoach] = useState(false);

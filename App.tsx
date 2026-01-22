@@ -155,6 +155,11 @@ setActiveClientId(null);
 };
 
 const handleClientLogin = async () => {
+  // ✅ Blockiere Coach-Account im Client-Login
+if (clientNameInput.trim().toLowerCase() === COACH_EMAIL.toLowerCase()) {
+  setAuthError("Bitte nutze den Coach-Login (nicht Client).");
+  return;
+}
   setAuthError(false);
 const { error } = await supabase.auth.signInWithPassword({email: clientNameInput,password: passwordInput,});
 

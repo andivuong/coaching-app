@@ -72,6 +72,47 @@ const generateEmptyWorkouts = (date: string): Workout[] => {
 const INITIAL_TARGETS: ClientTargets = { protein: 160, carbs: 250, fat: 70, steps: 10000, calories: 2270 };
 const COACH_PASSWORD = "161094";
 const App: React.FC = () => {
+  useEffect(() => {
+  const start = async () => {
+    const { data } = await supabase.auth.getSession();
+    const user = data.session?.user;
+    if (!user) return;
+
+    const coach =
+      (user.email || "").toLowerCase() === COACH_EMAIL.toLowerCase();
+
+    setIsCoach(coach);
+
+    if (coach) {
+      setActiveTab("admin");
+      await loadClientsFromDb();
+      return;
+    }
+
+    await supabase.from("app_clients").upsert(
+      { user_id: user.id, email: user.email, role: "client" },
+      { onConflict: "user_id" }
+    );
+
+    setClients({
+      [user.id]: {
+        id: user.id,
+        name: user.email || "Klient",
+        isActive: true,
+        targets: INITIAL_TARGETS,
+        records: {},
+        messages: [],
+      },
+    });
+
+    setActiveClientId(user.id);
+    setActiveTab("calendar");
+    await loadClientFromDb(user.id);
+  };
+
+  start();
+}, []);
+
 const COACH_EMAIL = "andi_vuong@gmx.de";
 const [activeClientId, setActiveClientId] = useState<string | null>(null);
 const [isCoach, setIsCoach] = useState(false);

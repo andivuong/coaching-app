@@ -720,20 +720,70 @@ try {
           )}
           {activeTab === 'progression' && activeClient && (<div className="max-w-5xl mx-auto">{isCoach && (<button onClick={() => { setActiveTab('admin'); setActiveClientId(null); }} className="mb-6 flex items-center gap-2 text-slate-400 font-black text-xs uppercase hover:text-blue-600"><Plus className="w-4 h-4 rotate-45" /> Zurück zur Übersicht</button>)}<ProgressionView records={activeClient.records || {}} clientName={activeClient.name} isCoach={isCoach} /></div>)}
           
-          {activeTab === 'admin' && isCoach && !activeClientId && (
-            <div className="max-w-6xl mx-auto space-y-6 md:space-y-8 pb-20">
-              <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-blue-900 p-6 md:p-10 rounded-[2.5rem] shadow-xl text-white">
-                <div><h2 className="text-2xl md:text-4xl font-black">Coach Übersicht</h2><p className="text-blue-300 text-xs font-black uppercase tracking-widest">{Object.keys(clients).length} Aktive Betreuungen</p></div>
-                <button onClick={() => { const id = `c${Date.now()}`; setClients(p => ({ ...p, [id]: { id, name: 'Neuer Klient', password: '123', isActive: true, targets: INITIAL_TARGETS, records: {}, messages: [], hasUnreadClientMsg: false, hasUnreadCoachMsg: false }})); }} className="bg-white text-blue-900 px-8 py-4 rounded-2xl font-black text-sm uppercase flex items-center gap-2 hover:bg-slate-50 transition-colors shadow-lg shadow-blue-950/20"><UserPlus className="w-5 h-5" /> Klient hinzufügen</button>
-              </div>
-              <div className="relative group max-w-xl mx-auto px-1"><Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" /><input placeholder="Suchen..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full bg-white border border-slate-200 p-4 pl-14 rounded-2xl font-black text-slate-700 shadow-sm focus:outline-none focus:border-blue-500 transition-all" /></div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredClients.map((client) => (
-                  <AdminClientCard key={client.id} client={client} onSelect={() => { setActiveClientId(client.id); setActiveTab('calendar'); }} onViewAnalysis={() => { setActiveClientId(client.id); setActiveTab('progression'); }} onUpdate={(up) => updateClientProfile(client.id, up)} onDelete={() => deleteClient(client.id)} />
-                ))}
-              </div>
-            </div>
-          )}
+         {isCoach && !activeClientId && activeTab !== 'chat' && (
+  <div className="max-w-6xl mx-auto space-y-6 md:space-y-8 pb-20">
+    <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-blue-900 p-6 md:p-10 rounded-[2.5rem] shadow-xl text-white">
+      <div>
+        <h2 className="text-2xl md:text-4xl font-black">Coach Übersicht</h2>
+        <p className="text-blue-300 text-xs font-black uppercase tracking-widest">
+          {Object.keys(clients).length} Aktive Betreuungen
+        </p>
+      </div>
+      <button
+        onClick={() => {
+          const id = `c${Date.now()}`;
+          setClients((p) => ({
+            ...p,
+            [id]: {
+              id,
+              name: "Neuer Klient",
+              password: "123",
+              isActive: true,
+              targets: INITIAL_TARGETS,
+              records: {},
+              messages: [],
+              hasUnreadClientMsg: false,
+              hasUnreadCoachMsg: false,
+            },
+          }));
+        }}
+        className="bg-white text-blue-900 px-8 py-4 rounded-2xl font-black text-sm uppercase flex items-center gap-2 hover:bg-slate-50 transition-colors shadow-lg shadow-blue-950/20"
+      >
+        <UserPlus className="w-5 h-5" /> Klient hinzufügen
+      </button>
+    </div>
+
+    <div className="relative group max-w-xl mx-auto px-1">
+      <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" />
+      <input
+        placeholder="Suchen..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="w-full bg-white border border-slate-200 p-4 pl-14 rounded-2xl font-black text-slate-700 shadow-sm focus:outline-none focus:border-blue-500 transition-all"
+      />
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {filteredClients.map((client) => (
+        <AdminClientCard
+          key={client.id}
+          client={client}
+          onSelect={() => {
+            setActiveClientId(client.id);
+            setActiveTab("calendar");
+          }}
+          onViewAnalysis={() => {
+            setActiveClientId(client.id);
+            setActiveTab("progression");
+          }}
+          onUpdate={(up) => updateClientProfile(client.id, up)}
+          onDelete={() => deleteClient(client.id)}
+        />
+      ))}
+    </div>
+  </div>
+)}
+
           
           {activeTab === 'chat' && (<div className="max-w-6xl mx-auto h-[70vh] md:h-[75vh]">{isCoach ? (<CoachInbox clients={clients} activeClientId={activeClientId} onSelectClient={setActiveClientId} onSendMessage={sendMessage} />) : (<ChatWindow messages={activeClient?.messages || []} onSendMessage={sendMessage} title="Coach Kontakt" isCoach={false} />)}</div>)}
         </main>

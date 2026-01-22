@@ -215,9 +215,10 @@ setClients((prev) => ({
     records,
   },
 }));
-
- const loadClientsFromDb = async () => {
-  const { data, error } = await supabase
+}; 
+  
+const loadClientsFromDb = async () => {
+const { data, error } = await supabase
     .from("app_clients")
     .select("*")
     .eq("role", "client");

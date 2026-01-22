@@ -139,7 +139,15 @@ const [aiInsight, setAiInsight] = useState<string | null>(null);
 const [loginMode, setLoginMode] = useState<'client' | 'coach'>('client');
 const [clientNameInput, setClientNameInput] = useState('');
 const [passwordInput, setPasswordInput] = useState('');
-const handleCoachLogin = async () => {setAuthError(false);
+const handleCoachLogin = async () => {
+
+  // ✅ Blockiere Client-Accounts im Coach-Login
+  if (clientNameInput.trim().toLowerCase() !== COACH_EMAIL.toLowerCase()) {
+    setAuthError("Bitte nutze den Client-Login (nicht Coach).");
+    return;
+  }
+
+setAuthError(false);
 const { error } = await supabase.auth.signInWithPassword({
     email: clientNameInput,   // hier kommt deine Admin-E-Mail rein
     password: passwordInput,  // hier dein neues Admin-Passwort
@@ -147,10 +155,10 @@ const { error } = await supabase.auth.signInWithPassword({
 
 if (error) {setAuthError("Login fehlgeschlagen");return;}
 
-setIsCoach(clientNameInput.trim().toLowerCase() === COACH_EMAIL.toLowerCase());
+setIsCoach(true);
 setActiveTab("admin");
 setActiveClientId(null);
-    await loadClientsFromDb();
+await loadClientsFromDb();
 
 };
 

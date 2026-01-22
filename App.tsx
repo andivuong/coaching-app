@@ -418,18 +418,39 @@ const saveDayToDb = async (clientId: string, date: string, record: any) => {
   const handleLogout = () => {
     setActiveClientId(null); setIsCoach(false); setAuthError(false); setPasswordInput(''); setClientNameInput('');
   };
+  
+const deleteClient = async (id: string) => {
+  const clientName = clients[id]?.name || "Klient";
+  const ok = window.confirm(
+    `Soll "${clientName}" wirklich gelöscht werden?\n\nHinweis: Login-Account (Auth) wird NICHT automatisch gelöscht.`
+  );
+  if (!ok) return;
 
-  const deleteClient = (id: string) => {
-    const clientName = clients[id]?.name || "Klient";
-    if (window.confirm(`Soll "${clientName}" wirklich gelöscht werden?`)) {
-      setClients(prev => {
-        const newState = { ...prev };
-        delete newState[id];
-        return newState;
-      });
-      if (activeClientId === id) { setActiveClientId(null); setActiveTab('admin'); }
-    }
-  };
+  // 1) DB: app_clients löschen (daily_logs werden durch CASCADE automatisch gelöscht)
+  const { error } = await supabase.from("app_clients").delete().eq("user_id", id);
+  if (error) {
+    console.error("delete app_clients error:", error);
+    alert("Löschen fehlgeschlagen (DB). Bitte später erneut versuchen.");
+    return;
+  }
+
+  // 2) UI: aus State entfernen
+  setClients((prev) => {
+    const next = { ...prev };
+    delete next[id];
+    return next;
+  });
+
+  // 3) UI: falls gerade geöffnet
+  if (activeClientId === id) {
+    setActiveClientId(null);
+    setActiveTab("admin");
+  }
+
+  alert(
+    `Client gelöscht.\n\nWenn du willst, lösche jetzt auch den Login-Account:\nSupabase → Authentication → Users → ${clientName}`
+  );
+};
 
   const activeClient = activeClientId ? clients[activeClientId] : null;
   

@@ -776,23 +776,44 @@ try {
         </p>
       </div>
       <button
-        onClick={() => {
-          const id = `c${Date.now()}`;
-          setClients((p) => ({
-            ...p,
-            [id]: {
-              id,
-              name: "Neuer Klient",
-              password: "123",
-              isActive: true,
-              targets: INITIAL_TARGETS,
-              records: {},
-              messages: [],
-              hasUnreadClientMsg: false,
-              hasUnreadCoachMsg: false,
-            },
-          }));
-        }}
+        onClick={async () => {
+  try {
+    const session = (await supabase.auth.getSession()).data.session;
+    if (!session) {
+      alert("Nicht eingeloggt");
+      return;
+    }
+
+    const res = await fetch(
+      "https://nrxabbtoikecqvyaabso.supabase.co/functions/v1/smooth-task",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          email: `client_${Date.now()}@demo.local`,
+          password: "123456",
+          name: "Neuer Klient",
+          license_days: 30,
+        }),
+      }
+    );
+
+    if (!res.ok) {
+      const txt = await res.text();
+      alert("Fehler: " + txt);
+      return;
+    }
+
+    // WICHTIG: echte Clients neu laden
+    await loadClientsFromDb();
+  } catch (e) {
+    alert("Fehler: " + String(e));
+  }
+}}
+
         className="bg-white text-blue-900 px-8 py-4 rounded-2xl font-black text-sm uppercase flex items-center gap-2 hover:bg-slate-50 transition-colors shadow-lg shadow-blue-950/20"
       >
         <UserPlus className="w-5 h-5" /> Klient hinzufügen

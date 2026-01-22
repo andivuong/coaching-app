@@ -91,7 +91,6 @@ const { error } = await supabase.auth.signInWithPassword({
   });
 
 if (error) {setAuthError("Login fehlgeschlagen");return;}
-if (error) {setAuthError("Login fehlgeschlagen");return;}
 
 setIsCoach(clientNameInput.trim().toLowerCase() === COACH_EMAIL.toLowerCase());
 setActiveTab("admin");

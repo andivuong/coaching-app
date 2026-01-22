@@ -276,6 +276,8 @@ const { data, error } = await supabase
     .from("app_clients")
     .select("*")
     .eq("role", "client");
+console.log("loadClientsFromDb ERROR:", error);
+console.log("loadClientsFromDb DATA:", data);
 
   if (error) {
     console.error("clients load error", error);

@@ -75,7 +75,7 @@ const App: React.FC = () => {
 const COACH_EMAIL = "andi_vuong@gmx.de";
 const [activeClientId, setActiveClientId] = useState<string | null>(null);
 const [isCoach, setIsCoach] = useState(false);
-const [clients, setClients] = useState<Record<string, ClientProfile>>({'c1': { id: 'c1', name: 'Max Mustermann', password: '123', isActive: true, targets: INITIAL_TARGETS, records: {}, messages: [] },});
+const [clients, setClients] = useState<Record<string, ClientProfile>>({});
 const [selectedDate, setSelectedDate] = useState<string>(formatDate(new Date()));
 const [previewDate, setPreviewDate] = useState<string>(formatDate(new Date()));
 const [activeTab, setActiveTab] = useState<'calendar' | 'details' | 'progression' | 'admin' | 'chat'>('calendar');

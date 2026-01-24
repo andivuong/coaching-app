@@ -820,7 +820,7 @@ try {
     }
 
     const res = await fetch(
-      "https://nrxabbtoikecqvyaabso.supabase.co/functions/v1/smooth-task",
+      "https://nrxabbtoikecqyvaabso.supabase.co/functions/v1/smooth-task",
       {
         method: "POST",
         headers: {

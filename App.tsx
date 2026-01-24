@@ -450,9 +450,17 @@ const saveDayToDb = async (clientId: string, date: string, record: any) => {
     setPasswordInput('');
   };
 
-  const handleLogout = () => {
-    setActiveClientId(null); setIsCoach(false); setAuthError(false); setPasswordInput(''); setClientNameInput('');
-  };
+  const handleLogout = async () => {
+  await supabase.auth.signOut(); // ✅ WICHTIG: echte Abmeldung
+
+  setActiveClientId(null);
+  setIsCoach(false);
+  setAuthError(false);
+  setPasswordInput('');
+  setClientNameInput('');
+  setActiveTab('calendar'); // optional, aber sauber
+};
+
   
 const deleteClient = async (id: string) => {
   const clientName = clients[id]?.name || "Klient";

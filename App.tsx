@@ -72,6 +72,42 @@ const INITIAL_TARGETS: ClientTargets = { protein: 160, carbs: 250, fat: 70, step
 const COACH_PASSWORD = "161094";
 const COACH_EMAIL = "andi_vuong@gmx.de";
 
+async function createClientTest() {
+  const storageKey = Object.keys(localStorage).find(k =>
+    k.endsWith("-auth-token")
+  );
+
+  if (!storageKey) {
+    alert("Nicht eingeloggt");
+    return;
+  }
+
+  const token = JSON.parse(localStorage.getItem(storageKey)!).access_token;
+
+  const res = await fetch("/api/create-client", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      email: "client1@test.de",
+      password: "Test1234!",
+      name: "Client 1",
+      license_days: 30,
+    }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  console.log("API RESULT:", res.status, data);
+
+  if (!res.ok) {
+    alert("Fehler: " + JSON.stringify(data));
+  } else {
+    alert("Client erstellt!");
+  }
+}
+
 const App: React.FC = () => {
   useEffect(() => {
   const start = async () => {

@@ -108,7 +108,6 @@ async function createClientTest() {
 
   alert("Client erstellt!");
 }
-}
 
 const App: React.FC = () => {
   useEffect(() => {

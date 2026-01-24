@@ -1601,6 +1601,13 @@ const ProgressionView = ({ records, clientName, isCoach }: { records: Record<str
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto pb-10">
+      <button
+  onClick={createClientTest}
+  className="px-4 py-2 rounded-lg bg-blue-600 text-white font-bold"
+>
+  Client erstellen (Test)
+</button>
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h2 className="text-3xl font-black text-slate-800">Fortschritt: <span className="text-blue-600">{clientName}</span></h2>
         <div className="flex bg-slate-100 p-1.5 rounded-2xl">

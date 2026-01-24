@@ -68,22 +68,18 @@ const generateEmptyWorkouts = (date: string): Workout[] => {
   }));
 };
 
-const INITIAL_TARGETS: ClientTargets = { protein: 160, carbs: 250, fat: 70, steps: 10000, calories: 2270 };
-const COACH_PASSWORD = "161094";
-const COACH_EMAIL = "andi_vuong@gmx.de";
-
 async function createClientTest() {
-  const storageKey = Object.keys(localStorage).find(k =>
-    k.endsWith("-auth-token")
-  );
+  // 1) Session sauber holen (statt localStorage)
+  const { data: sessionRes, error: sessionErr } = await supabase.auth.getSession();
 
-  if (!storageKey) {
-    alert("Nicht eingeloggt");
+  if (sessionErr || !sessionRes.session) {
+    alert("Nicht eingeloggt (keine Session). Bitte neu einloggen.");
     return;
   }
 
-  const token = JSON.parse(localStorage.getItem(storageKey)!).access_token;
+  const token = sessionRes.session.access_token;
 
+  // 2) IMMER über Vercel API Route aufrufen (nicht Supabase Functions URL!)
   const res = await fetch("/api/create-client", {
     method: "POST",
     headers: {
@@ -98,14 +94,20 @@ async function createClientTest() {
     }),
   });
 
-  const data = await res.json().catch(() => ({}));
+  // 3) Antwort lesen (auch wenn es kein JSON ist)
+  const text = await res.text();
+  let data: any = {};
+  try { data = JSON.parse(text); } catch { data = { raw: text }; }
+
   console.log("API RESULT:", res.status, data);
 
   if (!res.ok) {
     alert("Fehler: " + JSON.stringify(data));
-  } else {
-    alert("Client erstellt!");
+    return;
   }
+
+  alert("Client erstellt!");
+}
 }
 
 const App: React.FC = () => {

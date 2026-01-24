@@ -822,7 +822,7 @@ try {
     }
 
     const res = await fetch(
-      "https://nrxabbtoikecqyvaabso.supabase.co/functions/v1/smooth-task",
+  "/api/create-client",
       {
         method: "POST",
         headers: {
